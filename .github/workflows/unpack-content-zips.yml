@@ -106,7 +106,4 @@ jobs:
           # You can keep github_token (auto-provided) for public repos.
           # For private repos you may need to use a PAT stored in secrets.
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./docs
-          # optional: set a custom commit message
-          commit_message: "chore(deploy): publish site to gh-pages ({{ github.sha }})"
