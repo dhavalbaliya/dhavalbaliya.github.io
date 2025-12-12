@@ -21,10 +21,8 @@ jobs:
   unpack-zips:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository (full history)
+      - name: Checkout repository 
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Configure git
         run: |
@@ -94,6 +92,3 @@ jobs:
             # Push local HEAD to origin/<TARGET_BRANCH>
             git push origin HEAD:"$TARGET_BRANCH"
           fi
-
-      - name: Done
-        run: echo "Done zips unpacked, committed and pushed."
