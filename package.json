@@ -1,0 +1,12 @@
+{
+  "name": "gallery-webapp",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build:ghpages": "node scripts/generate_docs.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
