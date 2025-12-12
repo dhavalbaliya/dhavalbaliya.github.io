@@ -49,11 +49,6 @@ jobs:
           # Find zip files under content/ (any depth). Use -print0 to safely handle spaces/newlines.
           mapfile -d '' zips < <(find content -type f -iname '*.zip' -print0)
 
-          if [ "${#zips[@]}" -eq 0 ]; then
-            echo "No .zip files found under content/. Nothing to do."
-            exit 0
-          fi
-
           echo "Found ${#zips[@]} zip(s) — processing..."
           for zip in "${zips[@]}"; do
             # Normalize path and filename
