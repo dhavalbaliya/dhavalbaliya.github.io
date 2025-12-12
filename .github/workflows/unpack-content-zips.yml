@@ -67,7 +67,7 @@ jobs:
 
             echo "Extracting to '$dest'..."
             unzip -q -o "$zip" -d "$dest" || { echo "Failed to unzip $zip"; exit 1; }
-
+            rm -f "$zip"
           done
         
       - name: Setup Node.js
