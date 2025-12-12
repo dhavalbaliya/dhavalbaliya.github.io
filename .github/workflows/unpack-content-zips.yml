@@ -68,24 +68,7 @@ jobs:
             echo "Extracting to '$dest'..."
             unzip -q -o "$zip" -d "$dest" || { echo "Failed to unzip $zip"; exit 1; }
 
-            git add --all "$dest"
-            git rm -f -- "$zip"
           done
-
-          # If nothing was staged, exit cleanly
-          if git diff --cached --quiet; then
-            echo "No changes to commit. Exiting without error."
-            exit 0
-          fi
-
-          git commit -m "Unpack content ZIP(s) into content/ and remove zip file(s) [ci skip]"
-
-          # Push to the requested branch.
-          if [ "$TARGET_BRANCH" = "HEAD" ] || [ -z "$TARGET_BRANCH" ]; then
-            git push
-          else
-            git push origin HEAD:"$TARGET_BRANCH"
-          fi
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -95,6 +78,25 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Add, commit and push changes
+        run: |
+          # Determine branch (the branch that triggered the workflow)
+          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Pushing to branch: $CURRENT_BRANCH"
+
+          git add -A
+
+          # If no changes staged, exit gracefully
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Auto-update from GitHub Actions"
+
+          # Push to same branch
+          git push origin HEAD:$CURRENT_BRANCH
 
       - name: Build site for GitHub Pages
         # This should produce a ./docs directory (or whatever your publish_dir uses)
