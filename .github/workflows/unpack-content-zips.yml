@@ -37,7 +37,6 @@ jobs:
           # Determine target branch (either input or current branch)
           TARGET_BRANCH="${{ inputs.branch }}"
           if [ -z "$TARGET_BRANCH" ]; then
-            # github.ref may be refs/heads/<branch> for push; default to that
             if [[ "${GITHUB_REF:-}" == refs/heads/* ]]; then
               TARGET_BRANCH="${GITHUB_REF#refs/heads/}"
             else
@@ -49,36 +48,42 @@ jobs:
           # Find zip files under content/ (any depth). Use -print0 to safely handle spaces/newlines.
           mapfile -d '' zips < <(find content -type f -iname '*.zip' -print0)
 
+          # If no zips found, exit cleanly
+          if [ "${#zips[@]}" -eq 0 ]; then
+            echo "No .zip files found under content/. Nothing to do."
+            exit 0
+          fi
+
           echo "Found ${#zips[@]} zip(s) — processing..."
           for zip in "${zips[@]}"; do
-            # Normalize path and filename
             zip="${zip/#.\//}"    # remove leading ./ if present
             echo "Processing: '$zip'"
 
-            # basename and folder name (strip .zip or .ZIP)
             fname="$(basename -- "$zip")"
             base="${fname%.[Zz][Ii][Pp]}"   # case-insensitive strip .zip
 
-            # Destination folder under content/
             dest="content/$base"
-
-            # create destination and extract safely into it
             mkdir -p "$dest"
+
             echo "Extracting to '$dest'..."
             unzip -q -o "$zip" -d "$dest" || { echo "Failed to unzip $zip"; exit 1; }
 
-            # Stage extracted files and remove the zip from git
             git add --all "$dest"
             git rm -f -- "$zip"
           done
 
+          # If nothing was staged, exit cleanly
+          if git diff --cached --quiet; then
+            echo "No changes to commit. Exiting without error."
+            exit 0
+          fi
+
           git commit -m "Unpack content ZIP(s) into content/ and remove zip file(s) [ci skip]"
 
-          # Push to the requested branch. If TARGET_BRANCH is HEAD we push current HEAD.
+          # Push to the requested branch.
           if [ "$TARGET_BRANCH" = "HEAD" ] || [ -z "$TARGET_BRANCH" ]; then
             git push
           else
-            # Push local HEAD to origin/<TARGET_BRANCH>
             git push origin HEAD:"$TARGET_BRANCH"
           fi
         
