@@ -2,7 +2,7 @@
 set -eu
 
 # Determine target branch (input or current ref)
-TARGET_BRANCH=${1}
+TARGET_BRANCH=${1:-}
 
 if [ -z "$TARGET_BRANCH" ]; then
   case "${GITHUB_REF:-}" in
@@ -26,6 +26,7 @@ find content -type f -iname '*.zip' | while IFS= read -r zip; do
 
   fname=$(basename "$zip")
   base=${fname%.*}
+  final_dest="content/$base"
 
   tmpdir=$(mktemp -d)
 
@@ -36,23 +37,26 @@ find content -type f -iname '*.zip' | while IFS= read -r zip; do
     exit 1
   }
 
-  # Count top-level entries
-  set -- "$tmpdir"/*
-  if [ "$#" -eq 1 ] && [ -d "$1" ]; then
-    # Zip already contains a root folder
-    final_dest="content/$(basename "$1")"
-    echo "Zip has root folder, moving to $final_dest"
+  echo "Flattening all files into '$final_dest'..."
+  rm -rf "$final_dest"
+  mkdir -p "$final_dest"
 
-    rm -rf "$final_dest"
-    mv "$1" "$final_dest"
-  else
-    # Zip contains loose files
-    final_dest="content/$base"
-    echo "Zip has loose files, creating $final_dest"
+  # Move ALL files from any depth into final_dest
+  find "$tmpdir" -type f | while IFS= read -r file; do
+    name=$(basename "$file")
+    target="$final_dest/$name"
 
-    mkdir -p "$final_dest"
-    mv "$tmpdir"/* "$final_dest"/
-  fi
+    # Handle duplicate filenames
+    if [ -e "$target" ]; then
+      i=1
+      while [ -e "$final_dest/${base}_$i_$name" ]; do
+        i=$((i + 1))
+      done
+      target="$final_dest/${base}_$i_$name"
+    fi
+
+    mv "$file" "$target"
+  done
 
   rm -rf "$tmpdir"
   rm -f "$zip"
