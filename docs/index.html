@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gallery — Albums from content/</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Gallery</h1>
+  </header>
+
+  <main id="albums"></main>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lb-close" id="lb-close">✕</button>
+    <button class="lb-prev" id="lb-prev">◀</button>
+    <div class="lb-viewport"><img id="lb-img" alt=""></div>
+    <button class="lb-next" id="lb-next">▶</button>
+    <div id="lb-caption" class="lb-caption"></div>
+  </div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
